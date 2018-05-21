@@ -2,6 +2,7 @@ package grails.apns
 
 import grails.plugins.*
 import grails.util.Environment
+import org.codehaus.groovy.control.ConfigurationException
 import org.epseelon.grails.apns.ApnsFactoryBean
 
 class GrailsApnsGrailsPlugin extends Plugin {
@@ -40,26 +41,30 @@ Integrates with Apple Push Notification service to send push notifications to an
 
 
     Closure doWithSpring() {
-        def conf = application.config.apns
+        { ->
+            def conf = config.apns
 
-        ApnsFactoryBean.Environment apnsEnvironment
-        if (conf.environment) {
-            apnsEnvironment = ApnsFactoryBean.Environment.valueOf(conf.environment.toString().toUpperCase())
-        }
-        else {
-            if (Environment.current == Environment.PRODUCTION) {
-                apnsEnvironment = ApnsFactoryBean.Environment.PRODUCTION
+            ApnsFactoryBean.Environment apnsConfigEnvironment
+            if (conf.environment) {
+                apnsConfigEnvironment = ApnsFactoryBean.Environment.valueOf(conf.environment.toString().toUpperCase())
+            } else {
+                if (Environment.current == Environment.PRODUCTION) {
+                    apnsConfigEnvironment = ApnsFactoryBean.Environment.PRODUCTION
+                } else {
+                    apnsConfigEnvironment = ApnsFactoryBean.Environment.SANDBOX
+                }
             }
-            else {
-                apnsEnvironment = ApnsFactoryBean.Environment.SANDBOX
-            }
-        }
 
-        apnsService(ApnsFactoryBean) {
-            pathToCertificate = conf.pathToCertificate ?: null
-            certificateResourcePath = conf.certificateResourcePath ?: null
-            password = conf.password
-            environment = apnsEnvironment
+            if(!conf.password){
+                throw new ConfigurationException("Missing password for apns")
+            }
+
+            apnsService(ApnsFactoryBean) {
+                pathToCertificate = conf.pathToCertificate ?: null
+                certificateResourcePath = conf.certificateResourcePath ?: null
+                password = conf.password
+                apnsEnvironment = apnsConfigEnvironment
+            }
         }
     }
 }

@@ -84,3 +84,7 @@ grails:
 endpoints:
     jmx:
         unique-names: true
+
+apns:
+  password: PASSWORD
+  environment: SANDBOX

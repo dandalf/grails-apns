@@ -22,7 +22,7 @@ class ApnsFactoryBean implements FactoryBean {
     String certificateResourcePath
     String password
     boolean queued = false
-    Environment environment = Environment.SANDBOX
+    Environment apnsEnvironment = Environment.SANDBOX
     boolean nonBlocking = false
 
     def getObject() {
@@ -32,7 +32,7 @@ class ApnsFactoryBean implements FactoryBean {
         }
         else {
             if (!certificateResourcePath) {
-                switch (environment) {
+                switch (apnsEnvironment) {
                     case Environment.PRODUCTION: certificateResourcePath = "/apns-prod.p12"; break
                     case Environment.SANDBOX:    certificateResourcePath = "/apns-dev.p12"
                 }
@@ -40,7 +40,7 @@ class ApnsFactoryBean implements FactoryBean {
             apnsService.withCert(getClass().getResourceAsStream(certificateResourcePath), password)
         }
 
-        switch (environment) {
+        switch (apnsEnvironment) {
             case Environment.PRODUCTION: apnsService.withProductionDestination(); break
             case Environment.SANDBOX:    apnsService.withSandboxDestination()
         }
